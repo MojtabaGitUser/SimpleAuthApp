@@ -1,16 +1,25 @@
 package com.example.simpleauthapp.ui.login
 
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.simpleauthapp.data.repository.UserRepository
+import com.example.simpleauthapp.model.UserDto
 import com.example.simpleauthapp.network.RetrofitClient
 import kotlinx.coroutines.launch
 
 class LoginViewModel: ViewModel()  {
-    var username = ""
-    var password = ""
-    var errorMessage = ""
+
+    private val repository = UserRepository()
+
+    var username by mutableStateOf("")
+    var password by mutableStateOf("")
+    var errorMessage by mutableStateOf("")
+    var users by mutableStateOf<List<UserDto>>(emptyList())
+    var loading by mutableStateOf(false)
 
     fun login() {
         if (username.isBlank()){
@@ -27,12 +36,14 @@ class LoginViewModel: ViewModel()  {
     }
     fun fetchUsers(){
         viewModelScope.launch{
+            loading = true
             try{
-                val users = RetrofitClient.api.getUsers()
+                users = repository.getUsers()
                 Log.d("API", users.toString())
             }catch (e: Exception){
                 Log.e("API",e.message ?: "error")
             }
+            loading = false
         }
     }
 }
